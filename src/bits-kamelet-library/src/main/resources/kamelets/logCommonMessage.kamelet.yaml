@@ -1,0 +1,44 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: logCommonMessage
+  labels:
+    camel.apache.org/kamelet.type: "sink"
+spec:
+  definition:
+    title: "Log Common Message Kamelet"
+    description: "Logs messages with specific parameters"
+    properties:
+      processId:
+        type: string
+        description: "Process ID"
+        default: "${routeId}"
+      httpStatusCode:
+        type: number
+        description: "HTTP status code"
+        default: null
+      logNoteText:
+        type: string
+        description: "Log note text"
+        default: null
+      messageType:
+        type: string
+        description: "Message to log"
+        required: true
+      processStatusCode:
+        type: string
+        description: "Process status code"
+        default: null
+      messageDebugLevel:
+        type: string
+        description: "Message debug level"
+        default: "3"
+    dependencies:
+      - "camel:kamelet"
+  template:
+    from:
+      uri: kamelet:source
+      steps:
+        - set-body:
+            simple: "PROCESS_ID = {{processId}}, HTTP_STATUS_CODE = {{httpStatusCode}}, LOG_NOTE_TEXT = {{logNoteText}}, MESSAGE_TYPE = {{messageType}}, PROCESS_STATUS_CODE = {{processStatusCode}}, MESSAGE_DEBUG_LEVEL = {{messageDebugLevel}}"
+        - to: "log:custom-log?level=DEBUG"
